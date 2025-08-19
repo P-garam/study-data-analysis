@@ -26,3 +26,9 @@ while i < 3:
 
 break: 반복 종료
 continue: 다음 반복으로 건너뜀
+
+<깃허브 저장>
+git add . 모든 변경 사항 추가
+git commit -m "Add day01 practice files and notes" 설명메시지
+git push origin main 깃허브 원격 저장소로 푸시
+
