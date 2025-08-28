@@ -1,6 +1,8 @@
 import os
 base_path = os.path.dirname(__file__)  
 file_path = os.path.join(base_path, "ns_book4.csv")
+new_file = os.path.join(base_path, "ns_book5_update.csv")
+next_file = os.path.join(base_path, "ns_book6.csv")
 
 import pandas as pd
 ns_book4 = pd.read_csv(file_path, low_memory=False)
@@ -100,15 +102,17 @@ def get_book_info(row):
     author = row['저자']
     pub = row['출판사']
     year = row['발행년도']
-
+    # Yes24 도서 검색 페이지 url
     url = 'http://www.yes24.com/Product/Search?domain=BOOK&query={}'
-
+    # url에 isbn을 넣어서 html 가져오기
     r = requests.get(url.format(row['ISBN']))
-    soup = BeautifulSoup(r.text, 'html.parser')
-    try:
+    soup = BeautifulSoup(r.text, 'html.parser') # html 파싱
+
+    try: # 예외가 발생할 수 있는 코드에 사용
         if pd.isna(title):
+            # 클래스 이름이 'gd_name'인 <a> 태그의 텍스트를 가져온다
             title = soup.find('a', attrs={'class':'gd_name'}).get_text()
-    except AttributeError:
+    except AttributeError: # 예외가 발생했을때 어떻게할지
         pass
 
     try:
@@ -128,9 +132,24 @@ def get_book_info(row):
     try:
         if year == -1:
             year_str = soup.find('span', attrs={'class':'info_date'}).get_text()
+            # 정규 표현식으로 찾은 값 중에 첫 번째 것만 사용
             year = re.findall(r'\d{4}', year_str)[0]
     except AttributeError:
         pass
 
     return title, author, pub, year
 
+# 위 함수로 모든 열을 처리했을 경우의 파일을 코랩에서 다운받아 사용하기(실제로 하면 오래걸려서)
+import gdown
+gdown.download('https://bit.ly/3UJZiHw', new_file, quiet=False)
+ns_book5_update = pd.read_csv(new_file, index_col=0)
+
+ns_book5.update(ns_book5_update)
+na_rows = ns_book5['도서명'].isna() | ns_book5['저자'].isna() | ns_book5['출판사'].isna() | ns_book5['발행년도'].eq(-1)
+print(na_rows.sum())
+
+# 어느정도 정제 했는데도 누락된 값은 지우기
+ns_book6 = ns_book5.dropna(subset=['도서명', '저자', '출판사'])
+ns_book6 = ns_book6[ns_book6['발행년도'] != -1]
+
+ns_book6.to_csv(next_file, index=False)
