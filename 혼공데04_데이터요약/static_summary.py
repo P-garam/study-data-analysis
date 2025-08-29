@@ -1,6 +1,8 @@
 import os
 base_path = os.path.dirname(__file__)  
 file_path = os.path.join(base_path, "ns_book6.csv")
+save_path = os.path.join(base_path, "ns_book7.csv")
+
 
 import pandas as pd
 ns_book6 = pd.read_csv('./혼공데03_데이터정제/ns_book6.csv', low_memory=False)
@@ -28,3 +30,5 @@ print(ns_book7['대출건수'].std()) # 표준편차(평균을 중심으로 데�
 print(ns_book7['대출건수'].mode()) # 최빈값 // 텍스트, 수치형 모두 적용가능
 
 print(ns_book7.mean(numeric_only=True)) # 데이터프레임의 모든 열 중, 수치형데이터 열에만 적용
+
+ns_book7.to_csv(save_path, index=False)
